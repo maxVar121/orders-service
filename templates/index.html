@@ -1,0 +1,68 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Поиск заказа</title>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 40px;
+        }
+
+        input,
+        button {
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f8f8;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Найти информацию по заказу</h1>
+    <p>Введите ID заказа:</p>
+    <input type="text" id="orderID" placeholder="Например: b563feb7b2b84b6test" />
+    <button onclick="getOrder()">Найти</button>
+    <div id="result"></div>
+
+    <script>
+        function getOrder() {
+            const id = document.getElementById("orderID").value.trim();
+            if (!id) return alert("Введите ID");
+
+            const result = document.getElementById("result");
+            result.textContent = "Загрузка...";
+
+            fetch("/order/" + encodeURIComponent(id))
+                .then((res) => {
+                    if (!res.ok) throw new Error("Не найден");
+                    return res.json();
+                })
+                .then((data) => {
+                    result.innerHTML = `
+                    <strong>Заказ:</strong> ${data.order_uid}<br>
+                    <strong>Товары:</strong>
+                    <ul>
+                        ${data.items
+                            .map(
+                                (i) =>
+                                    `<li>${i.name} — ${i.price} ₽ (размер: ${i.size}, бренд: ${i.brand})</li>`
+                            )
+                            .join("")}
+                    </ul>
+                `;
+                })
+                .catch((err) => (result.textContent = "Ошибка: " + err.message));
+        }
+    </script>
+</body>
+
+</html>
